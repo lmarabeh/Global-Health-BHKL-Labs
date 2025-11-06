@@ -30,3 +30,11 @@ h1, h2, h3, h4, h5, h6 {
     line-height: 1.1;
     text-wrap: balance;
 }
+
+blockquote {
+    border-left: 0.25em solid var(--border-color);
+    margin-left: 0;
+    padding-left: 1em;
+    color: oklch(100% 0.00011 271.152);
+    font-style: italic;
+}

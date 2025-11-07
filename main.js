@@ -33,11 +33,20 @@ async function loadData() {
     return data;
 }
 
+
+let currentTransform = d3.zoomIdentity;
+let currentRegion = 'all';
+let currentYear = 2021;
+let globalData = null;
 // Global variables for scales and dots
-let xScale, yScale, rScale, colorScale, dots;
+let xScale, yScale, rScale, colorScale, dots, svg;
+let zoom;
+
 
 // Create scatter plot, also similar to prev lab
-function renderScatterPlot(data) {
+function renderScatterPlot(data, regionFilter = 'all', year = 2021) {
+    currentTransform = d3.zoomIdentity;
+    d3.select('#chart').selectAll('*').remove();
     // Set up SVG and dimensions
     const width = 1000;
     const height = 600;
@@ -52,48 +61,71 @@ function renderScatterPlot(data) {
         width: width - margin.left - margin.right,
         height: height - margin.top - margin.bottom,
     };
-    const svg = d3
+    svg = d3
         .select('#chart')
         .append('svg')
         .attr('viewBox', `0 0 ${width} ${height}`)
         .style('overflow', 'visible');
 
+    let filteredYearData = data
+        .filter(d => d.Year.getFullYear() === year)
+        .filter(d => d.log_GDP_Per_Capita > 0 && d.Life_Expectancy > 0);
+
+    if (regionFilter !== 'all') {
+        filteredYearData = filteredYearData.filter(d => d.Region === regionFilter);
+    }
+
+    if (filteredYearData.length === 0) {
+        console.warn('No data for year', year, 'and region', regionFilter);
+        svg.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2)
+            .attr('text-anchor', 'middle')
+            .style('fill', 'white')
+            .style('font-size', '20px')
+            .text(`No data available for ${regionFilter} in ${year}`);
+        return;
+    }
     // Scales
     xScale = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.log_GDP_Per_Capita))
+        .domain(d3.extent(filteredYearData, d => d.log_GDP_Per_Capita))
         .range([usableArea.left, usableArea.right])
         .nice();
 
     yScale = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.Life_Expectancy))
+        .domain(d3.extent(filteredYearData, d => d.Life_Expectancy))
         .range([usableArea.bottom, usableArea.top])
         .nice();
 
-    const [minLines, maxLines] = d3.extent(data, d => d.Total_Population);
+    const [minLines, maxLines] = d3.extent(filteredYearData, d => d.Total_Population);
     rScale = d3
         .scaleSqrt() // Change only this line
         .domain([minLines, maxLines])
         .range([2, 30]);
 
-    // // Add gridlines BEFORE the axes
-    // const gridlines = svg
-    //     .append('g')
-    //     .attr('class', 'gridlines')
-    //     .attr('transform', `translate(${usableArea.left}, 0)`);
+    // Add gridlines BEFORE the axes
+    const gridlines = svg
+        .append('g')
+        .attr('class', 'gridlines')
+        .attr('transform', `translate(${usableArea.left}, 0)`);
 
-    // // Create gridlines as an axis with no labels and full-width ticks
-    // gridlines.call(d3.axisLeft(yScale).tickFormat('').tickSize(-usableArea.width));
+    // Create gridlines as an axis with no labels and full-width ticks
+    gridlines.call(d3.axisLeft(yScale).tickFormat('').tickSize(-usableArea.width));
 
     // Axis creation
     const xAxis = d3.axisBottom(xScale);
     const yAxis = d3.axisLeft(yScale);
 
     svg.append("g")
+        .attr("class", "x-axis")
         .attr("transform", `translate(0, ${usableArea.bottom})`)
         .call(xAxis);
+
     svg.append("g")
+        .attr("class", "y-axis")
         .attr("transform", `translate(${usableArea.left}, 0)`)
         .call(yAxis);
+
 
     // add title and x-axis, y-axis
     svg.append("text")
@@ -123,13 +155,13 @@ function renderScatterPlot(data) {
         .text("Life Expectancy(Years)");
 
 
-    // Filter data for a specific year (e.g., 2021)
-    const currentYear = 2021;
-    const filteredYearData = data
-        .filter(d => d.Year.getFullYear() === currentYear)
-        .filter(d => d.log_GDP_Per_Capita > 0 && d.Life_Expectancy > 0);
-    xScale.domain(d3.extent(filteredYearData, d => d.log_GDP_Per_Capita)).nice();
-    yScale.domain(d3.extent(filteredYearData, d => d.Life_Expectancy)).nice();
+    // // Filter data for a specific year (e.g., 2021)
+    // const currentYear = 2021;
+    // const filteredYearData = data
+    //     .filter(d => d.Year.getFullYear() === currentYear)
+    //     .filter(d => d.log_GDP_Per_Capita > 0 && d.Life_Expectancy > 0);
+    // xScale.domain(d3.extent(filteredYearData, d => d.log_GDP_Per_Capita)).nice();
+    // yScale.domain(d3.extent(filteredYearData, d => d.Life_Expectancy)).nice();
 
     // Plot data points
     dots = svg.append('g').attr('class', 'dots');
@@ -167,54 +199,55 @@ function renderScatterPlot(data) {
             updateTooltipVisibility(false);
         });
 
-    // Add Year Slider Interaction 
-    const yearSlider = document.getElementById("yearSlider");
-    const yearLabel = document.getElementById("yearLabel");
+    // // Add Year Slider Interaction 
+    // const yearSlider = document.getElementById("yearSlider");
+    // const yearLabel = document.getElementById("yearLabel");
 
-    yearSlider.addEventListener("input", () => {
-        const selectedYear = +yearSlider.value;
-        yearLabel.textContent = selectedYear;
+    // yearSlider.addEventListener("input", () => {
+    //     const selectedYear = +yearSlider.value;
+    //     yearLabel.textContent = selectedYear;
 
-        // filter selected year
-        const filteredYearData = data
-            .filter(d => d.Year.getFullYear() === selectedYear)
-            .filter(d => d.log_GDP_Per_Capita > 0 && d.Life_Expectancy > 0);
+    //     // filter selected year
+    //     const filteredYearData = data
+    //         .filter(d => d.Year.getFullYear() === year)
+    //         .filter(d => d.log_GDP_Per_Capita > 0 && d.Life_Expectancy > 0)
+    //         .filter(d => regionFilter === 'all' || d.Region === regionFilter);
+    //     // update x/y scale
+    //     xScale.domain(d3.extent(filteredYearData, d => d.log_GDP_Per_Capita)).nice();
+    //     yScale.domain(d3.extent(filteredYearData, d => d.Life_Expectancy)).nice();
 
-        // update x/y scale
-        xScale.domain(d3.extent(filteredYearData, d => d.log_GDP_Per_Capita)).nice();
-        yScale.domain(d3.extent(filteredYearData, d => d.Life_Expectancy)).nice();
+    //     // update dots
+    //     dots.selectAll("circle")
+    //         .data(filteredYearData, d => d.Country)
+    //         .join("circle")
+    //         .transition()
+    //         .duration(400)
+    //         .attr("cx", d => xScale(d.log_GDP_Per_Capita))
+    //         .attr("cy", d => yScale(d.Life_Expectancy))
+    //         .attr("r", d => rScale(d.Total_Population))
+    //         .attr("fill", d => colorScale(d.Aggregate_Score))
+    //         .attr("fill-opacity", 0.9)
+    //         .selection()
+    //         .on("mouseenter", (event, d) => {
+    //             d3.select(event.currentTarget)
+    //                 .attr("r", rScale(d.Total_Population) * 1.3)
+    //                 .attr("stroke", "white")
+    //                 .attr("stroke-width", 2)
+    //                 .attr("fill-opacity", 1)
+    //             renderTooltipContent(d);
+    //             updateTooltipVisibility(true);
+    //             updateTooltipPosition(event);
+    //         })
+    //         .on("mouseleave", (event, d) => {
+    //             d3.select(event.currentTarget)
+    //                 .attr("r", rScale(d.Total_Population))
+    //                 .attr("stroke", "none")
+    //                 .attr("fill-opacity", 0.85)
+    //             updateTooltipVisibility(false);
+    //         });
 
-        // update dots
-        dots.selectAll("circle")
-            .data(filteredYearData, d => d.Country)
-            .join("circle")
-            .transition()
-            .duration(400)
-            .attr("cx", d => xScale(d.log_GDP_Per_Capita))
-            .attr("cy", d => yScale(d.Life_Expectancy))
-            .attr("r", d => rScale(d.Total_Population))
-            .attr("fill", d => colorScale(d.Aggregate_Score))
-            .attr("fill-opacity", 0.9)
-            .selection()
-            .on("mouseenter", (event, d) => {
-                d3.select(event.currentTarget)
-                    .attr("r", rScale(d.Total_Population) * 1.3)
-                    .attr("stroke", "white")
-                    .attr("stroke-width", 2)
-                    .attr("fill-opacity", 1)
-                renderTooltipContent(d);
-                updateTooltipVisibility(true);
-                updateTooltipPosition(event);
-            })
-            .on("mouseleave", (event, d) => {
-                d3.select(event.currentTarget)
-                    .attr("r", rScale(d.Total_Population))
-                    .attr("stroke", "none")
-                    .attr("fill-opacity", 0.85)
-                updateTooltipVisibility(false);
-            });
+    // });
 
-    });
     // add legend
     const legend = svg.append('g')
         .attr('transform', `translate(${width - 280},400)`);
@@ -283,6 +316,11 @@ function renderScatterPlot(data) {
         .attr("fill", "white")
         .style("font-size", "11px")
         .text("Immunization, Unemployment");
+
+
+    setupZoom();
+    updateRegionStats(filteredYearData, regionFilter);
+    console.log(`Rendered ${filteredYearData.length} countries for ${year}, region: ${regionFilter}`);
 }
 
 function renderTooltipContent(d) {
@@ -297,7 +335,7 @@ function renderTooltipContent(d) {
     gdp.textContent = d.log_GDP_Per_Capita.toFixed(2);
     lifeExpectancy.textContent = d.Life_Expectancy.toFixed(1);
     population.textContent = d.Total_Population.toLocaleString();
-    Aggregate_Score.textContent = d.Aggregate_Score.toFixed(2);
+    aggregate.textContent = d.Aggregate_Score.toFixed(2);
 }
 
 function updateTooltipVisibility(isVisible) {
@@ -311,6 +349,131 @@ function updateTooltipPosition(event) {
     tooltip.style.top = `${event.pageY - offset}px`;
 }
 
-// Initializations
+
+function setupZoom() {
+    zoom = d3.zoom()
+        .scaleExtent([0.5, 10])
+        .on('zoom', handleZoom);
+
+    svg.call(zoom);
+    svg.call(zoom.transform, d3.zoomIdentity);
+    svg.on('dblclick.zoom', resetZoom);
+}
+
+function handleZoom(event) {
+    currentTransform = event.transform;
+
+    dots.attr('transform', currentTransform);
+
+    const newXScale = currentTransform.rescaleX(xScale);
+    const newYScale = currentTransform.rescaleY(yScale);
+
+    svg.select('.x-axis').call(d3.axisBottom(newXScale));
+    svg.select('.y-axis').call(d3.axisLeft(newYScale));
+
+
+    svg.select('.gridlines').call(
+        d3.axisLeft(newYScale).tickFormat('').tickSize(-1000)
+    );
+}
+
+function resetZoom() {
+    svg.transition()
+        .duration(750)
+        .call(d3.zoom().transform, currentTransform = d3.zoomIdentity);
+}
+
+function setupZoomControls() {
+    d3.select('#zoom-in').on('click', () => {
+        svg.transition().duration(500).call(zoom.scaleBy, 1.3);
+    });
+
+    d3.select('#zoom-out').on('click', () => {
+        svg.transition().duration(500).call(zoom.scaleBy, 0.77);
+    });
+    d3.select('#zoom-reset').on('click', () => {
+        svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+    });
+}
+
+
+
+function setupRegionControls() {
+    d3.select('#region-selector').on('change', function () {
+        currentRegion = this.value;
+        renderScatterPlot(globalData, currentRegion, currentYear);
+    });
+
+    d3.select('#clear-filter').on('click', () => {
+        currentRegion = 'all';
+        d3.select('#region-selector').property('value', 'all');
+        renderScatterPlot(globalData, currentRegion, currentYear);
+    });
+}
+
+
+
+function updateRegionStats(data, region) {
+    if (data.length === 0) {
+        d3.select('#region-stats').html('<p>No data available</p>');
+        return;
+    }
+
+    const avgLife = d3.mean(data, d => d.Life_Expectancy);
+    const avgGDP = d3.mean(data, d => d.log_GDP_Per_Capita);
+    const totalPop = d3.sum(data, d => d.Total_Population);
+    const avgAggregate = d3.mean(data.filter(d => d.Aggregate_Score), d => d.Aggregate_Score);
+
+    const regionName = region === 'all' ? 'Global' : region;
+
+    d3.select('#region-stats').html(`
+        <h3>${regionName} Statistics (${currentYear})</h3>
+        <dl class="stats">
+            <dt>Countries</dt>
+            <dd>${data.length}</dd>
+            
+            <dt>Total Population</dt>
+            <dd>${(totalPop / 1e9).toFixed(2)} billion</dd>
+            
+            <dt>Avg Life Expectancy</dt>
+            <dd>${avgLife.toFixed(1)} years</dd>
+            
+            <dt>Avg GDP (log)</dt>
+            <dd>${avgGDP.toFixed(2)}</dd>
+            
+            <dt>Avg Aggregate Score</dt>
+            <dd>${avgAggregate ? avgAggregate.toFixed(2) : 'N/A'}</dd>
+        </dl>
+    `);
+}
+
+function setupYearSlider() {
+    d3.select('#yearSlider').on('input', function () {
+        currentYear = +this.value;
+        d3.select('#yearLabel').text(currentYear);
+
+        renderScatterPlot(globalData, currentRegion, currentYear);
+    });
+}
+
+
+
+
 const data = await loadData();
-renderScatterPlot(data);
+globalData = data;
+
+
+
+renderScatterPlot(globalData, currentRegion, currentYear);
+
+setupZoomControls();
+setupRegionControls();
+setupYearSlider();
+
+
+
+
+
+// // Initializations
+// const data = await loadData();
+// renderScatterPlot(data);

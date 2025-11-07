@@ -18,16 +18,43 @@
     <br>
     <br>
     <br>
-    <!-- add year slider -->
-
-    <label for="yearSlider">Year:</label>
-    <input type="range" id="yearSlider" min="2012" max="2021" step="1" value="2021" />
-    <span id="yearLabel">2021</span>
-
+    <!-- add zoom and control section -->
     <br><br>
     <br>
+    <div id="zoom-controls">
+        <button id="zoom-in" title="Zoom In">🔍+</button>
+        <button id="zoom-out" title="Zoom Out">🔍−</button>
+        <button id="zoom-reset" title="Reset Zoom">⟲</button>
+    </div>
+
+    <div id="controls-section">
+
+        <div class="control-group">
+            <label for="yearSlider">Year:</label>
+            <input type="range" id="yearSlider" min="2012" max="2021" step="1" value="2021" />
+            <span id="yearLabel">2021</span>
+        </div>
+
+        <div id="region-controls" class="control-group">
+            <label for="region-selector">Filter by Region:</label>
+            <select id="region-selector">
+                <option value="all"> All Regions</option>
+                <option value="Africa"> Africa</option>
+                <option value="Asia"> Asia</option>
+                <option value="Europe"> Europe</option>
+                <option value="Americas"> Americas</option>
+                <option value="Oceania"> Oceania</option>
+            </select>
+            <button id="clear-filter">Clear Filter</button>
+        </div>
+
+    </div>
 
     <div id="chart"></div>
+    <div id="region-stats">
+        <h3>Global Statistics (2021)</h3>
+        <p>Loading data...</p>
+    </div>
 
     <dl id="chart-tooltip" class="country tooltip" hidden>
         <dt>Country:</dt>
@@ -38,8 +65,8 @@
         <dd id="tooltip-life-expectancy"></dd>
         <dt>Total Population:</dt>
         <dd id="tooltip-population"></dd>
-        <dt>Aggregate_Score:</dt>
-        <dd id="Aggregate_Score"></dd>
+        <dt>Aggregate Score:</dt>
+        <dd id="tooltip-aggregate"></dd>
     </dl>
 
     <br>

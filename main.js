@@ -280,10 +280,15 @@ function renderTooltipContent(d) {
     const lifeExpectancy = document.getElementById('tooltip-life-expectancy');
     const population = document.getElementById('tooltip-population');
     const aggregate = document.getElementById('tooltip-aggregate');
+    
     if (Object.keys(d).length === 0) return;
 
     country.textContent = d.Country;
-    gdp.textContent = d.log_GDP_Per_Capita.toFixed(2);
+    const actualGDP = Math.exp(d.log_GDP_Per_Capita);
+    gdp.textContent = `$${actualGDP.toLocaleString(undefined, {
+        maximumFractionDigits: 0,
+        minimumFractionDigits: 0
+    })}`;
     lifeExpectancy.textContent = d.Life_Expectancy.toFixed(1);
     population.textContent = d.Total_Population.toLocaleString();
     aggregate.textContent = d.Aggregate_Score.toFixed(2);

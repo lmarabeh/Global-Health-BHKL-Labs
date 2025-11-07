@@ -17,6 +17,83 @@ async function loadData() {
         "Safe_Water_Access_Percent_Score", "Unemployment_Rate_Score",
         "Immunization_Rate_Score", "Aggregate_Score"
     ];
+function addRegionToData(data) {
+    const regionMap = {
+        // Americas
+        'United States': 'Americas', 'United States of America': 'Americas', 'USA': 'Americas',
+        'Canada': 'Americas', 'Mexico': 'Americas', 'Brazil': 'Americas', 'Argentina': 'Americas',
+        'Chile': 'Americas', 'Colombia': 'Americas', 'Peru': 'Americas', 'Venezuela': 'Americas',
+        'Ecuador': 'Americas', 'Bolivia': 'Americas', 'Paraguay': 'Americas', 'Uruguay': 'Americas',
+        'Guatemala': 'Americas', 'Honduras': 'Americas', 'Nicaragua': 'Americas', 'Costa Rica': 'Americas',
+        'Panama': 'Americas', 'Cuba': 'Americas', 'Jamaica': 'Americas', 'Haiti': 'Americas',
+        'Dominican Republic': 'Americas', 'El Salvador': 'Americas', 'Puerto Rico': 'Americas',
+        'Trinidad and Tobago': 'Americas', 'Bahamas': 'Americas', 'Belize': 'Americas',
+        'Barbados': 'Americas', 'Suriname': 'Americas', 'Guyana': 'Americas',
+        
+        // Europe
+        'United Kingdom': 'Europe', 'UK': 'Europe', 'France': 'Europe', 'Germany': 'Europe',
+        'Italy': 'Europe', 'Spain': 'Europe', 'Poland': 'Europe', 'Romania': 'Europe',
+        'Netherlands': 'Europe', 'Belgium': 'Europe', 'Greece': 'Europe', 'Portugal': 'Europe',
+        'Sweden': 'Europe', 'Austria': 'Europe', 'Switzerland': 'Europe', 'Denmark': 'Europe',
+        'Finland': 'Europe', 'Norway': 'Europe', 'Ireland': 'Europe', 'Czech Republic': 'Europe',
+        'Czechia': 'Europe', 'Hungary': 'Europe', 'Serbia': 'Europe', 'Bulgaria': 'Europe',
+        'Croatia': 'Europe', 'Slovakia': 'Europe', 'Lithuania': 'Europe', 'Slovenia': 'Europe',
+        'Latvia': 'Europe', 'Estonia': 'Europe', 'Albania': 'Europe', 'Moldova': 'Europe',
+        'Bosnia and Herzegovina': 'Europe', 'North Macedonia': 'Europe', 'Macedonia': 'Europe',
+        'Iceland': 'Europe', 'Luxembourg': 'Europe', 'Malta': 'Europe', 'Montenegro': 'Europe',
+        'Russia': 'Europe', 'Russian Federation': 'Europe', 'Ukraine': 'Europe', 'Belarus': 'Europe',
+        'Cyprus': 'Europe', 'Kosovo': 'Europe', 'Andorra': 'Europe', 'Monaco': 'Europe',
+        'Liechtenstein': 'Europe', 'San Marino': 'Europe', 'Vatican City': 'Europe',
+        
+        // Asia
+        'China': 'Asia', 'India': 'Asia', 'Japan': 'Asia', 'South Korea': 'Asia',
+        'Korea, Republic of': 'Asia', 'Indonesia': 'Asia', 'Pakistan': 'Asia', 'Bangladesh': 'Asia',
+        'Vietnam': 'Asia', 'Philippines': 'Asia', 'Thailand': 'Asia', 'Turkey': 'Asia',
+        'Iran': 'Asia', 'Iraq': 'Asia', 'Saudi Arabia': 'Asia', 'Malaysia': 'Asia',
+        'Nepal': 'Asia', 'Afghanistan': 'Asia', 'Yemen': 'Asia', 'Sri Lanka': 'Asia',
+        'Myanmar': 'Asia', 'Cambodia': 'Asia', 'Jordan': 'Asia', 'United Arab Emirates': 'Asia',
+        'Israel': 'Asia', 'Singapore': 'Asia', 'Lebanon': 'Asia', 'Oman': 'Asia',
+        'Kuwait': 'Asia', 'Georgia': 'Asia', 'Mongolia': 'Asia', 'Armenia': 'Asia',
+        'Qatar': 'Asia', 'Bahrain': 'Asia', 'Kazakhstan': 'Asia', 'Uzbekistan': 'Asia',
+        'Tajikistan': 'Asia', 'Kyrgyzstan': 'Asia', 'Turkmenistan': 'Asia', 'Laos': 'Asia',
+        'Syria': 'Asia', 'Palestine': 'Asia', 'Bhutan': 'Asia', 'Maldives': 'Asia',
+        'Brunei': 'Asia', 'Timor-Leste': 'Asia', 'East Timor': 'Asia', 'Azerbaijan': 'Asia',
+        'North Korea': 'Asia', 'Hong Kong': 'Asia', 'Macau': 'Asia',
+        
+        // Africa
+        'Nigeria': 'Africa', 'Ethiopia': 'Africa', 'Egypt': 'Africa', 
+        'Democratic Republic of the Congo': 'Africa', 'Congo, Dem. Rep.': 'Africa', 'DR Congo': 'Africa',
+        'South Africa': 'Africa', 'Tanzania': 'Africa', 'Kenya': 'Africa', 'Uganda': 'Africa',
+        'Algeria': 'Africa', 'Sudan': 'Africa', 'Morocco': 'Africa', 'Angola': 'Africa',
+        'Ghana': 'Africa', 'Mozambique': 'Africa', 'Madagascar': 'Africa', 'Cameroon': 'Africa',
+        'Ivory Coast': 'Africa', "Côte d'Ivoire": 'Africa', 'Niger': 'Africa', 'Burkina Faso': 'Africa',
+        'Mali': 'Africa', 'Malawi': 'Africa', 'Zambia': 'Africa', 'Somalia': 'Africa',
+        'Senegal': 'Africa', 'Chad': 'Africa', 'Zimbabwe': 'Africa', 'Guinea': 'Africa',
+        'Rwanda': 'Africa', 'Benin': 'Africa', 'Tunisia': 'Africa', 'Burundi': 'Africa',
+        'South Sudan': 'Africa', 'Togo': 'Africa', 'Sierra Leone': 'Africa', 'Libya': 'Africa',
+        'Liberia': 'Africa', 'Central African Republic': 'Africa', 'Mauritania': 'Africa',
+        'Eritrea': 'Africa', 'Gambia': 'Africa', 'Botswana': 'Africa', 'Namibia': 'Africa',
+        'Gabon': 'Africa', 'Lesotho': 'Africa', 'Guinea-Bissau': 'Africa', 'Equatorial Guinea': 'Africa',
+        'Mauritius': 'Africa', 'Eswatini': 'Africa', 'Swaziland': 'Africa', 'Djibouti': 'Africa',
+        'Reunion': 'Africa', 'Comoros': 'Africa', 'Cape Verde': 'Africa', 
+        'Sao Tome and Principe': 'Africa', 'Seychelles': 'Africa', 'Western Sahara': 'Africa',
+        'Mayotte': 'Africa', 'Congo': 'Africa', 'Republic of the Congo': 'Africa',
+        
+        // Oceania
+        'Australia': 'Oceania', 'Papua New Guinea': 'Oceania', 'New Zealand': 'Oceania',
+        'Fiji': 'Oceania', 'Solomon Islands': 'Oceania', 'Vanuatu': 'Oceania',
+        'New Caledonia': 'Oceania', 'French Polynesia': 'Oceania', 'Samoa': 'Oceania',
+        'Guam': 'Oceania', 'Kiribati': 'Oceania', 'Micronesia': 'Oceania', 'Tonga': 'Oceania',
+        'Palau': 'Oceania', 'Cook Islands': 'Oceania', 'Marshall Islands': 'Oceania',
+        'Nauru': 'Oceania', 'Tuvalu': 'Oceania', 'American Samoa': 'Oceania',
+        'Northern Mariana Islands': 'Oceania',
+    };
+
+data.forEach(d => d.Region = regionMap[d.Country] || 'Unknown';
+    });
+    
+
+    
     const parseYear = d3.timeParse("%Y");
 
     const data = await d3.csv("./data/global_health_with_index.csv", (row) => {
@@ -415,7 +492,7 @@ function setupYearSlider() {
 
 
 const data = await loadData();
-globalData = data;
+globalData = addRegionToData(data);
 
 
 

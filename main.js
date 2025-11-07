@@ -28,6 +28,7 @@ async function loadData() {
             ...row,
             Year: parseYear(row.Year),
             Country: row.Country?.trim?.() || "",
+            Continent: row.Continent?.trim?.() || "",
         };
     });
 

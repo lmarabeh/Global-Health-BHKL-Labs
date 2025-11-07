@@ -94,11 +94,15 @@ function renderScatterPlot(data) {
     
     // Filter data for a specific year (e.g., 2020)
     const currentYear = 2020;
-    const yearData = data.filter(d => d.Year.getFullYear() === currentYear);
-    
-    // Plot data points 
+    const filteredYearData = data
+        .filter(d => d.Year.getFullYear() === currentYear)
+        .filter(d => d.log_GDP_Per_Capita > 0 && d.Life_Expectancy > 0);
+    xScale.domain(d3.extent(filteredYearData, d => d.log_GDP_Per_Capita)).nice();
+    yScale.domain(d3.extent(filteredYearData, d => d.Life_Expectancy)).nice();
+
+    // Plot data points
     const dots = svg.append('g').attr('class', 'dots');
-    const sortedData = d3.sort(yearData, d => -d.Total_Population);
+    const sortedData = d3.sort(filteredYearData, d => -d.Total_Population);
 
     let colorScale = d3.scaleOrdinal(d3.schemePastel1);
 
@@ -110,26 +114,45 @@ function renderScatterPlot(data) {
         .attr("cy", d => yScale(d.Life_Expectancy))
         .attr("r", d => rScale(d.Total_Population))
         .attr("fill", d => colorScale(d.Country))
-        .attr("fill-opacity", 0.7)
+        .attr("fill-opacity", 0.9)
         .on("mouseenter", (event, d) => {
             d3.select(event.currentTarget)
-                .transition().duration(100)
                 .attr("fill-opacity", 1)
-                .attr("stroke", "#333")
-                .attr("stroke-width", 1);
             renderTooltipContent(d);
             updateTooltipVisibility(true);
             updateTooltipPosition(event);
             })
         .on("mouseleave", (event) => {
             d3.select(event.currentTarget)
-                .transition().duration(200)
                 .attr("fill-opacity", 0.7)
-                .attr("stroke-width", 0);
                 updateTooltipVisibility(false);
         });
 }
 
-// Initializations 
+function renderTooltipContent(d) {
+    const country = document.getElementById('tooltip-country');
+    const gdp = document.getElementById('tooltip-gdp');
+    const lifeExpectancy = document.getElementById('tooltip-life-expectancy');
+    const population = document.getElementById('tooltip-population');
+    if (Object.keys(d).length === 0) return;
+
+    country.textContent = d.Country;
+    gdp.textContent = `GDP Per Capita (log): ${d.log_GDP_Per_Capita.toFixed(2)}`;
+    lifeExpectancy.textContent = `Life Expectancy: ${d.Life_Expectancy.toFixed(1)} years`;
+    population.textContent = `Total Population: ${d.Total_Population.toLocaleString()}`;
+}
+
+function updateTooltipVisibility(isVisible) {
+    const tooltip = document.getElementById('chart-tooltip');
+    tooltip.hidden = !isVisible;
+}
+function updateTooltipPosition(event) {
+    const tooltip = document.getElementById('chart-tooltip');
+    const offset = 10;
+    tooltip.style.left = `${event.pageX + offset}px`;
+    tooltip.style.top = `${event.pageY - offset}px`;
+}
+
+// Initializations
 const data = await loadData();
 renderScatterPlot(data);

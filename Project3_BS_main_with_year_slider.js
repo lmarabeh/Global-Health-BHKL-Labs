@@ -3,7 +3,7 @@ import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.9.0/+esm';
 
 let currentTransform = d3.zoomIdentity;
 let currentRegion = 'all';
-let currentYear = 2021; 
+let currentYear = 2021;
 let globalData = null;
 let xScale, yScale, rScale, colorScale;
 let svg, dots;
@@ -41,9 +41,9 @@ async function loadData() {
 
 function renderScatterPlot(data, regionFilter = 'all', year = 2021) {
     d3.select('#chart').selectAll('*').remove();
-    
+
     const width = 1000;
-    const height = 600; 
+    const height = 600;
 
     const margin = { top: 10, right: 10, bottom: 30, left: 20 };
     const usableArea = {
@@ -54,21 +54,21 @@ function renderScatterPlot(data, regionFilter = 'all', year = 2021) {
         width: width - margin.left - margin.right,
         height: height - margin.top - margin.bottom,
     };
-    
+
     svg = d3
         .select('#chart')
         .append('svg')
-        .attr('viewBox', `0 0 ${width} ${height}`) 
+        .attr('viewBox', `0 0 ${width} ${height}`)
         .style('overflow', 'visible');
-    
+
     let filteredYearData = data
         .filter(d => d.Year.getFullYear() === year)
         .filter(d => d.log_GDP_Per_Capita > 0 && d.Life_Expectancy > 0);
-    
+
     if (regionFilter !== 'all') {
         filteredYearData = filteredYearData.filter(d => d.Region === regionFilter);
     }
-    
+
     if (filteredYearData.length === 0) {
         console.warn('No data for year', year, 'and region', regionFilter);
         svg.append('text')
@@ -80,7 +80,7 @@ function renderScatterPlot(data, regionFilter = 'all', year = 2021) {
             .text(`No data available for ${regionFilter} in ${year}`);
         return;
     }
-    
+
     xScale = d3.scaleLinear()
         .domain(d3.extent(filteredYearData, d => d.log_GDP_Per_Capita))
         .range([usableArea.left, usableArea.right])
@@ -104,7 +104,7 @@ function renderScatterPlot(data, regionFilter = 'all', year = 2021) {
         .attr('opacity', 0.15);
 
     gridlines.call(d3.axisLeft(yScale).tickFormat('').tickSize(-usableArea.width));
-    
+
     const xAxis = d3.axisBottom(xScale);
     const yAxis = d3.axisLeft(yScale);
 
@@ -112,7 +112,7 @@ function renderScatterPlot(data, regionFilter = 'all', year = 2021) {
         .attr("class", "x-axis")
         .attr("transform", `translate(0, ${usableArea.bottom})`)
         .call(xAxis);
-    
+
     svg.append("g")
         .attr("class", "y-axis")
         .attr("transform", `translate(${usableArea.left}, 0)`)
@@ -153,11 +153,11 @@ function renderScatterPlot(data, regionFilter = 'all', year = 2021) {
                 .attr("stroke-width", regionFilter === 'all' ? 0 : 2);
             updateTooltipVisibility(false);
         });
-    
+
     setupZoom();
-    
+
     updateRegionStats(filteredYearData, regionFilter);
-    
+
     console.log(`Rendered ${filteredYearData.length} countries for ${year}, region: ${regionFilter}`);
 }
 
@@ -167,7 +167,7 @@ function renderTooltipContent(d) {
     const lifeExpectancy = document.getElementById('tooltip-life-expectancy');
     const population = document.getElementById('tooltip-population');
     const aggregate = document.getElementById('tooltip-aggregate');
-    
+
     if (Object.keys(d).length === 0) return;
 
     country.textContent = d.Country;
@@ -193,23 +193,23 @@ function setupZoom() {
     const zoom = d3.zoom()
         .scaleExtent([0.5, 10])
         .on('zoom', handleZoom);
-    
+
     svg.call(zoom);
     svg.on('dblclick.zoom', resetZoom);
 }
 
 function handleZoom(event) {
     currentTransform = event.transform;
-    
+
     dots.attr('transform', currentTransform);
-    
+
     const newXScale = currentTransform.rescaleX(xScale);
     const newYScale = currentTransform.rescaleY(yScale);
-    
+
     svg.select('.x-axis').call(d3.axisBottom(newXScale));
     svg.select('.y-axis').call(d3.axisLeft(newYScale));
-    
-    
+
+
     svg.select('.gridlines').call(
         d3.axisLeft(newYScale).tickFormat('').tickSize(-1000)
     );
@@ -225,26 +225,27 @@ function setupZoomControls() {
     d3.select('#zoom-in').on('click', () => {
         svg.transition().duration(500).call(d3.zoom().scaleBy, 1.3);
     });
-    
+
     d3.select('#zoom-out').on('click', () => {
         svg.transition().duration(500).call(d3.zoom().scaleBy, 0.77);
     });
 }
-    
+
 
 
 function setupRegionControls() {
-    d3.select('#region-selector').on('change', function() {
+    d3.select('#region-selector').on('change', function () {
         currentRegion = this.value;
         renderScatterPlot(globalData, currentRegion, currentYear);
     });
-    
+
     d3.select('#clear-filter').on('click', () => {
         currentRegion = 'all';
         d3.select('#region-selector').property('value', 'all');
         renderScatterPlot(globalData, currentRegion, currentYear);
-    });}
-    
+    });
+}
+
 
 
 function updateRegionStats(data, region) {
@@ -252,14 +253,14 @@ function updateRegionStats(data, region) {
         d3.select('#region-stats').html('<p>No data available</p>');
         return;
     }
-    
+
     const avgLife = d3.mean(data, d => d.Life_Expectancy);
     const avgGDP = d3.mean(data, d => d.log_GDP_Per_Capita);
     const totalPop = d3.sum(data, d => d.Total_Population);
     const avgAggregate = d3.mean(data.filter(d => d.Aggregate_Score), d => d.Aggregate_Score);
-    
+
     const regionName = region === 'all' ? 'Global' : region;
-    
+
     d3.select('#region-stats').html(`
         <h3>${regionName} Statistics (${currentYear})</h3>
         <dl class="stats">
@@ -282,13 +283,14 @@ function updateRegionStats(data, region) {
 }
 
 function setupYearSlider() {
-    d3.select('#yearSlider').on('input', function() {
+    d3.select('#yearSlider').on('input', function () {
         currentYear = +this.value;
         d3.select('#yearLabel').text(currentYear);
-        
+
         renderScatterPlot(globalData, currentRegion, currentYear);
-    });}
-    
+    });
+}
+
 
 
 

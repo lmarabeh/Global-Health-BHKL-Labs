@@ -19,7 +19,7 @@ async function loadData() {
     ];
     const parseYear = d3.timeParse("%Y");
 
-    const data = await d3.csv("data/global_health_with_index.csv", (row) => {
+    const data = await d3.csv("./data/global_health_with_index.csv", (row) => {
         numericFields.forEach(f => {
             row[f] = +row[f];
         });
@@ -198,55 +198,6 @@ function renderScatterPlot(data, regionFilter = 'all', year = 2021) {
                 .attr("fill-opacity", 0.85)
             updateTooltipVisibility(false);
         });
-
-    // // Add Year Slider Interaction 
-    // const yearSlider = document.getElementById("yearSlider");
-    // const yearLabel = document.getElementById("yearLabel");
-
-    // yearSlider.addEventListener("input", () => {
-    //     const selectedYear = +yearSlider.value;
-    //     yearLabel.textContent = selectedYear;
-
-    //     // filter selected year
-    //     const filteredYearData = data
-    //         .filter(d => d.Year.getFullYear() === year)
-    //         .filter(d => d.log_GDP_Per_Capita > 0 && d.Life_Expectancy > 0)
-    //         .filter(d => regionFilter === 'all' || d.Region === regionFilter);
-    //     // update x/y scale
-    //     xScale.domain(d3.extent(filteredYearData, d => d.log_GDP_Per_Capita)).nice();
-    //     yScale.domain(d3.extent(filteredYearData, d => d.Life_Expectancy)).nice();
-
-    //     // update dots
-    //     dots.selectAll("circle")
-    //         .data(filteredYearData, d => d.Country)
-    //         .join("circle")
-    //         .transition()
-    //         .duration(400)
-    //         .attr("cx", d => xScale(d.log_GDP_Per_Capita))
-    //         .attr("cy", d => yScale(d.Life_Expectancy))
-    //         .attr("r", d => rScale(d.Total_Population))
-    //         .attr("fill", d => colorScale(d.Aggregate_Score))
-    //         .attr("fill-opacity", 0.9)
-    //         .selection()
-    //         .on("mouseenter", (event, d) => {
-    //             d3.select(event.currentTarget)
-    //                 .attr("r", rScale(d.Total_Population) * 1.3)
-    //                 .attr("stroke", "white")
-    //                 .attr("stroke-width", 2)
-    //                 .attr("fill-opacity", 1)
-    //             renderTooltipContent(d);
-    //             updateTooltipVisibility(true);
-    //             updateTooltipPosition(event);
-    //         })
-    //         .on("mouseleave", (event, d) => {
-    //             d3.select(event.currentTarget)
-    //                 .attr("r", rScale(d.Total_Population))
-    //                 .attr("stroke", "none")
-    //                 .attr("fill-opacity", 0.85)
-    //             updateTooltipVisibility(false);
-    //         });
-
-    // });
 
     // add legend
     const legend = svg.append('g')

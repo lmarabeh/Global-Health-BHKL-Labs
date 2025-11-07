@@ -312,7 +312,6 @@ function setupZoom() {
         .on('zoom', handleZoom);
 
     svg.call(zoom);
-    svg.call(zoom.transform, d3.zoomIdentity);
     svg.on('dblclick.zoom', resetZoom);
 }
 
@@ -336,7 +335,7 @@ function handleZoom(event) {
 function resetZoom() {
     svg.transition()
         .duration(750)
-        .call(d3.zoom().transform, currentTransform = d3.zoomIdentity);
+        .call(zoom.transform, d3.zoomIdentity);
 }
 
 function setupZoomControls() {

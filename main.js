@@ -1,3 +1,42 @@
+// Navigation bar addition
+let pages = [
+    { url: '', title: 'Home' },
+    { url: 'about-project/', title: 'About' },
+];
+
+let nav = document.createElement('nav');
+document.body.prepend(nav);
+
+const ARE_WE_HOME = document.documentElement.classList.contains('home');
+const BASE_PATH = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+  ? "/"                  // Local server
+  : "/Global-Health-BHKL-Labs/";         // GitHub Pages repo name
+
+
+for (let p of pages) {
+    let url = p.url;
+    let title = p.title;
+    url = !url.startsWith('http') ? BASE_PATH + url : url;
+
+    // Create link and add it to nav
+    let a = document.createElement('a');
+    a.href = url;
+    a.textContent = title;
+    nav.append(a);
+    
+    if (a.host === location.host && a.pathname === location.pathname) {
+        const currentPath = location.pathname.endsWith('/') ? location.pathname + 'index.html' : location.pathname;
+        const linkPath = a.pathname.endsWith('/') ? a.pathname + 'index.html' : a.pathname;
+        if (linkPath === currentPath) {
+            a.classList.add('current');
+        }
+    }
+    if (a.host !== location.host) {
+        a.target = '_blank';
+    }
+}
+
+
 // Import d3 
 import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.9.0/+esm';
 
@@ -626,13 +665,10 @@ function setupYearSlider() {
     });
 }
 
-
-
+// Initializations
 
 const data = await loadData();
 globalData = addRegionToData(data);
-
-
 
 renderScatterPlot(globalData, currentRegion, currentYear);
 
@@ -640,10 +676,5 @@ setupZoomControls();
 setupRegionControls();
 setupYearSlider();
 
-
-
-
-
-// // Initializations
 // const data = await loadData();
 // renderScatterPlot(data);

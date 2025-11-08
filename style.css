@@ -5,7 +5,6 @@
     --border-color: oklch(50% 10% 200 / 40%);
 }
 
-
 html {
     accent-color: var(--color-accent);
     /* Set the default accent color */
@@ -52,6 +51,46 @@ p {
     text-indent: 1.5em;
 }
 
+/* Navbar CSS */
+nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: oklch(25% 0.02 271); /* same dark purple-blue tone as controls */
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75em 1.25em;
+  margin-bottom: 2em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+nav a {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+  color: oklch(90% 0 0); /* light text, matches labels */
+  font-weight: 600;
+  padding: 0.75em 1em;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+
+nav a.current {
+  color: var(--color-accent);
+  background: color-mix(in oklch, var(--color-accent) 15%, oklch(25% 0.02 271));
+  border: 1px solid var(--color-accent);
+  box-shadow: 0 0 10px color-mix(in oklch, var(--color-accent) 40%, transparent);
+}
+
+nav a:hover {
+  background: color-mix(in oklch, var(--color-accent) 25%, oklch(25% 0.02 271));
+  color: oklch(98% 0 0);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Begin Plot CSS */
 circle {
     transition: 200ms;
     transform-origin: center;

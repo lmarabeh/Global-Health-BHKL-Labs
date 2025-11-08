@@ -29,6 +29,15 @@ h2 {
     margin: 0;
 }
 
+h2 a {
+    text-decoration: none;
+    color: inherit;
+}
+
+h2 a:hover {
+    text-decoration: underline;
+}
+
 h1,
 h2,
 h3,
@@ -457,4 +466,39 @@ section h2 {
 
 .carousel-btn.next {
   right: 10px;
+}
+
+/*  About Page Styles ) */
+.team-list {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+    color: oklch(100% 0.00011 271.152); 
+}
+
+.team-list li {
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    color: inherit;
+}
+
+/* Targeted selector for the 'Github:' text */
+.team-list p, 
+.team-list li p { 
+    margin: 5px 0 0 0;
+    font-size: 1rem;
+    color: inherit;
+    text-indent: 0; 
+}
+
+.team-list a {
+    /* Force white color, overriding default blue link styles */
+    color: oklch(100% 0.00011 271.152) !important;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.team-list a:hover {
+    text-decoration: underline;
+    color: var(--color-accent) !important; 
 }

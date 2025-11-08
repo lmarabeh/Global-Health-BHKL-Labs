@@ -108,6 +108,15 @@ function renderScatterPlot(data, regionFilter = 'all', year = 2021) {
         .attr('viewBox', `0 0 ${width} ${height}`)
         .style('overflow', 'visible');
 
+    svg.append("defs").append("clipPath")
+        .attr("id", "chart-clip") // Give it a unique ID
+      .append("rect")
+        // Define the clipping rectangle based on the usableArea
+        .attr("x", usableArea.left)
+        .attr("y", usableArea.top)
+        .attr("width", usableArea.width)
+        .attr("height", usableArea.height);
+
     let filteredYearData = data
         .filter(d => d.Year.getFullYear() === year)
         .filter(d => d.log_GDP_Per_Capita > 0 && d.Life_Expectancy > 0);
@@ -205,7 +214,9 @@ function renderScatterPlot(data, regionFilter = 'all', year = 2021) {
     // yScale.domain(d3.extent(filteredYearData, d => d.Life_Expectancy)).nice();
 
     // Plot data points
-    dots = svg.append('g').attr('class', 'dots');
+    dots = svg.append('g')
+        .attr('class', 'dots')
+        .attr("clip-path", "url(#chart-clip)"); // Apply clipping path
     const sortedData = d3.sort(filteredYearData, d => -d.Total_Population);
     // change the color to show the Aggregate_Score(red is poorer,green is better)
     // let colorScale = d3.scaleOrdinal(d3.schemePastel1);
@@ -310,7 +321,7 @@ function renderScatterPlot(data, regionFilter = 'all', year = 2021) {
         .text("Immunization, Unemployment");
 
 
-    setupZoom();
+    setupZoom(usableArea, width, height);
     updateRegionStats(filteredYearData, regionFilter);
     console.log(`Rendered ${filteredYearData.length} countries for ${year}, region: ${regionFilter}`);
 }
@@ -347,30 +358,38 @@ function updateTooltipPosition(event) {
 }
 
 
-function setupZoom() {
+function setupZoom(usableArea, width, height) {
+
+    // Define handleZoom *inside* setupZoom
+    function handleZoom(event) {
+        currentTransform = event.transform;
+
+        // Create the new scales, just like before
+        const newXScale = currentTransform.rescaleX(xScale);
+        const newYScale = currentTransform.rescaleY(yScale);
+
+        // Update the positions of the dots
+        dots.selectAll("circle")
+            .attr("cx", d => newXScale(d.log_GDP_Per_Capita))
+            .attr("cy", d => newYScale(d.Life_Expectancy));
+
+        // Update the axes
+        svg.select('.x-axis').call(d3.axisBottom(newXScale));
+        svg.select('.y-axis').call(d3.axisLeft(newYScale));
+
+        // Update the gridlines0 using the correct usableArea.width
+        svg.select('.gridlines').call(
+            d3.axisLeft(newYScale).tickFormat('').tickSize(-usableArea.width)
+        );
+    }
+
     zoom = d3.zoom()
         .scaleExtent([0.5, 10])
-        .on('zoom', handleZoom);
+        .translateExtent([[usableArea.left, usableArea.top], [usableArea.right, usableArea.bottom]])
+        .on('zoom', handleZoom); 
 
     svg.call(zoom);
     svg.on('dblclick.zoom', resetZoom);
-}
-
-function handleZoom(event) {
-    currentTransform = event.transform;
-
-    dots.attr('transform', currentTransform);
-
-    const newXScale = currentTransform.rescaleX(xScale);
-    const newYScale = currentTransform.rescaleY(yScale);
-
-    svg.select('.x-axis').call(d3.axisBottom(newXScale));
-    svg.select('.y-axis').call(d3.axisLeft(newYScale));
-
-
-    svg.select('.gridlines').call(
-        d3.axisLeft(newYScale).tickFormat('').tickSize(-1000)
-    );
 }
 
 function resetZoom() {
@@ -463,5 +482,4 @@ setupZoomControls();
 setupRegionControls();
 setupYearSlider();
 
-// const data = await loadData();
-// renderScatterPlot(data);
+
